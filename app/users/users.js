@@ -5,6 +5,7 @@ var config    = require('../shared/config');
 var ObjectID  = mongodb.ObjectID;
 
 const USER_COLLECTION = 'users';
+const IMAGE_COLLECTION = 'images';
 
 module.exports = function(app, db) {
 	var paramM = require("../shared/params.middleware.js")(app, db);
@@ -82,5 +83,6 @@ module.exports = function(app, db) {
 						updateUser);
 	app.delete('/users',	authM.validateUser,
 							deleteUser);
+
 	app.get('/users/:id', getUser);
 }

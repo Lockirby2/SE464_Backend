@@ -3,6 +3,8 @@ var mongodb   = require('mongodb');
 var ObjectID  = mongodb.ObjectID;
 
 const IMAGE_COLLECTION = 'images';
+const USER_COLLECTION  = 'users';
+const SEARCH_RADIUS    = 500;
 
 module.exports = function(app, db) {
 	var paramM = require("../shared/params.middleware.js")(app, db);
@@ -10,7 +12,15 @@ module.exports = function(app, db) {
 
 	function getImagesInRange(req, res) {
 		db.collection(IMAGE_COLLECTION)
-			.find()
+			.find({
+		        location:
+		        	{ $near :
+		            	{
+			            	$geometry: { type: "Point",  coordinates: [ req.body.latitude, req.body.longitude ] },
+			            	$maxDistance: SEARCH_RADIUS
+		            	}
+		        	}
+		    })
 			.toArray()
 			.then(function(images) {
 				res.status(200).json(images).end();
@@ -27,10 +37,17 @@ module.exports = function(app, db) {
 		image.rating      = 5;
 		image.user        = req.user;
 		image.filePath    = '../../images/dummy';
+		image.location    = {
+    		type: "Point",
+    		coordinates: [ req.body.latitude, req.body.longitude ]
+    	};
 
 		db.collection(IMAGE_COLLECTION)
-			.insert(image)
-			.then(function(image) {
+			.insertOne(image)
+			.then(function(retImage) {
+				var action = {$push: {images: retImage.insertedId}}
+				return db.collection(USER_COLLECTION).updateOne({_id: req.user}, action);
+			}).then(function() {
 				res.status(200).json(image).end();
 			}).catch(function(err) {
 				res.status(500).json({error: "Failed to post image"}).end();
@@ -53,8 +70,6 @@ module.exports = function(app, db) {
 		update.name        = req.body.name;
 		update.description = req.body.description;
 
-		//req.user = new ObjectID('582f4be12761ce23c5f7109d');
-
 		db.collection(IMAGE_COLLECTION)
 			.updateOne({_id: new ObjectID(req.params.id), user: req.user}, {$set: update})
 			.then(function(image) {
@@ -75,14 +90,29 @@ module.exports = function(app, db) {
 				if (image.result.n === 0) {
 					res.status(401).json({error: "Unauthorized"}).end();
 				} else {
-					res.status(200).end();
+					var action = {$pull: {images: new ObjectID(req.params.id)}}
+					return db.collection(USER_COLLECTION).updateOne({_id: req.user}, action);
 				}
+			}).then(function(image) {
+				res.status(200).end();
 			}).catch(function(err) {
 				res.status(500).json({error: "Failed to delete image"}).end();
 			});
 	}
 
-	app.get('/images', getImagesInRange);
+	function getImagesByUser(req, res) {
+		db.collection(IMAGE_COLLECTION)
+			.find({user: new ObjectID(req.params.id)})
+			.toArray()
+			.then(function(image) {
+				res.status(200).json(image).end();
+			}).catch(function(err) {
+				res.status(500).json({error: "Failed to get image"}).end();
+			});
+	}
+
+	app.get('/images',	paramM.checkBodyParams(['longitude', 'latitude']),
+						getImagesInRange);
 	app.post('/images', authM.validateUser,
 						paramM.checkBodyParams(['longitude', 'latitude']),
 						postImage);
@@ -92,4 +122,6 @@ module.exports = function(app, db) {
 							updateImage);
 	app.delete('/images/:id',	authM.validateUser,
 								deleteImage);
+
+	app.get('/images/user/:id',	getImagesByUser);
 }
