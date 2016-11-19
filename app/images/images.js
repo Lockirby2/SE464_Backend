@@ -70,9 +70,9 @@ module.exports = function(app, db) {
 
 	function deleteImage(req, res) {
 		db.collection(IMAGE_COLLECTION)
-			.deleteOne({_id: new ObjectID(req.params.id)})
+			.deleteOne({_id: new ObjectID(req.params.id), user: req.user})
 			.then(function(image) {
-				if (image.result.nModified === 0) {
+				if (image.result.n === 0) {
 					res.status(401).json({error: "Unauthorized"}).end();
 				} else {
 					res.status(200).end();

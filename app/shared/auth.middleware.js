@@ -19,7 +19,6 @@ module.exports = (function(app, db) {
 			return res.status(401).json({ message : "'Bearer:' must be first field in authorization header." });
 		}
 
-		console.log(credentials[1]);
 		var url = config.googleUrl + credentials[1];
 
 		request(url, function(error, response, body) {
