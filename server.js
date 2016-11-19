@@ -19,6 +19,7 @@ mongodb.connect(uri)
 function startServer(db) {
 	// list all required files here.
 	require('./app/images/images')(app, db);
+	require('./app/users/users')(app, db);
 
 	console.log("Server starting on port " + PORT);
 	app.listen(PORT);
