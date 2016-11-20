@@ -2,9 +2,9 @@ var express   = require('express');
 var mongodb   = require('mongodb');
 var ObjectID  = mongodb.ObjectID;
 
-const IMAGE_COLLECTION = 'images';
-const USER_COLLECTION  = 'users';
-const SEARCH_RADIUS    = 500;
+const IMAGE_COLLECTION  = 'images';
+const USER_COLLECTION   = 'users';
+const SEARCH_RADIUS     = 500;
 
 module.exports = function(app, db) {
 	var paramM = require("../shared/params.middleware.js")(app, db);
@@ -93,7 +93,7 @@ module.exports = function(app, db) {
 					var action = {$pull: {images: new ObjectID(req.params.id)}}
 					return db.collection(USER_COLLECTION).updateOne({_id: req.user}, action);
 				}
-			}).then(function(image) {
+			}).then(function() {
 				res.status(200).end();
 			}).catch(function(err) {
 				res.status(500).json({error: "Failed to delete image"}).end();
@@ -104,8 +104,8 @@ module.exports = function(app, db) {
 		db.collection(IMAGE_COLLECTION)
 			.find({user: new ObjectID(req.params.id)})
 			.toArray()
-			.then(function(image) {
-				res.status(200).json(image).end();
+			.then(function(images) {
+				res.status(200).json(images).end();
 			}).catch(function(err) {
 				res.status(500).json({error: "Failed to get image"}).end();
 			});
