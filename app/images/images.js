@@ -29,6 +29,27 @@ module.exports = function(app, db) {
 			});
 	}
 
+	function rawBody(req, res, next) {
+	    var chunks = [];
+
+	    req.on('data', function(chunk) {
+	        chunks.push(chunk);
+	    });
+
+	    req.on('end', function() {
+	        var buffer = Buffer.concat(chunks);
+
+	        req.bodyLength = buffer.length;
+	        req.rawBody = buffer;
+	        next();
+	    });
+
+	    req.on('error', function (err) {
+	        console.log(err);
+	        res.status(500);
+	    });
+	}
+
 	function postImage(req, res) {
 		var image = {};
 
@@ -52,6 +73,7 @@ module.exports = function(app, db) {
 			}).catch(function(err) {
 				res.status(500).json({error: "Failed to post image"}).end();
 			});
+		fs.writeFile('dank.png', req.rawBody, 'base64', function(err) {});
 	}
 
 	function getImage(req, res) {
@@ -115,6 +137,7 @@ module.exports = function(app, db) {
 						getImagesInRange);
 	app.post('/images', authM.validateUser,
 						paramM.checkBodyParams(['longitude', 'latitude']),
+						rawBody,
 						postImage);
 
 	app.get('/images/:id', getImage);
