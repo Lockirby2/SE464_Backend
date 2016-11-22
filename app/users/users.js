@@ -37,6 +37,8 @@ module.exports = function(app, db) {
 			var bodyOb = JSON.parse(body);
 
 			if (error || response.statusCode !== 200) {
+				console.log("error: " + error);
+				console.log("Status code: " + response.statusCode !== 200);
 				console.log("Google API call failed");
 				res.status(500).json({error: "Google API call failed"}).end();
 				return;
@@ -63,7 +65,7 @@ module.exports = function(app, db) {
 		var update = {};
 
 		update.name = req.body.name;
-		user.email       = req.body.email;
+		user.email  = req.body.email;
 
 		db.collection(USER_COLLECTION)
 			.updateOne({_id: req.user}, {$set: update})
