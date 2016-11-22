@@ -30,8 +30,6 @@ module.exports = function(app, db) {
 	}
 
 	function postRating(req, res) {
-		req.user = new ObjectID('58347c8fb04e3784211d151b');
-		console.log("rating being posted" + req.body.rating);
 		var query = {iid: new ObjectID(req.params.iid), uid: req.user}
 		var update = {iid: new ObjectID(req.params.iid), uid: req.user, rating: req.body.rating}
 		var rating = {}
@@ -63,8 +61,8 @@ module.exports = function(app, db) {
 
 	app.get('/ratings/:iid',	authM.validateUser,
 								getRating);
-	app.post('/ratings/:iid',	//authM.validateUser,
-								//paramM.checkBodyParams(['rating']),
+	app.post('/ratings/:iid',	authM.validateUser,
+								paramM.checkBodyParams(['rating']),
 								postRating);
 	app.delete('/ratings/:iid',	authM.validateUser,
 								deleteRating);

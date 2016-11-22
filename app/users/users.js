@@ -61,6 +61,7 @@ module.exports = function(app, db) {
 		var update = {};
 
 		update.name = req.body.name;
+		user.email       = req.body.email;
 
 		db.collection(USER_COLLECTION)
 			.updateOne({_id: req.user}, {$set: update})
@@ -72,14 +73,13 @@ module.exports = function(app, db) {
 	}
 
 	function deleteUser(req, res) {
-		req.user = new ObjectID('58347c8fb04e3784211d151b');
 		db.collection(USER_COLLECTION)
 			.deleteOne({_id: req.user})
 			.then(function() {
 				return db.collection(RATING_COLLECTION).deleteMany({uid: req.user});
 			})
 			.then(function() {
-				return db.collection(FRIEND_COLLECTION).deleteMany($or [{uidOne: req.user}, {uidTwo: req.user}]);
+				return db.collection(FRIEND_COLLECTION).deleteMany({$or: [{uidOne: req.user}, {uidTwo: req.user}]});
 			})
 			.then(function() {
 				res.status(200).end();

@@ -14,10 +14,6 @@ module.exports = function(app, db) {
 	var authM  = require("../shared/auth.middleware.js")(app, db);
 
 	function getImagesInRange(req, res) {
-
-		console.log(req.query.latitude);
-		console.log(req.query.longitude);
-
 		db.collection(IMAGE_COLLECTION)
 			.find({
 		        location:
@@ -73,10 +69,7 @@ module.exports = function(app, db) {
 	}
 
 	function postImage(req, res) {
-		req.user = new ObjectID('5830a9719232ff51bf026a8e');
 		var image = {};
-		console.log(req.body);
-		console.log("POSTING IMAGES");
 		image.name        = req.body.name        || 'Untitled';
 		image.description = req.body.description || 'No Description :)';
 		image.rating      = 5;
@@ -159,7 +152,6 @@ module.exports = function(app, db) {
 	}
 
 	function deleteImage(req, res) {
-		req.user = new ObjectID('58347a0db04e3784211d1518');
 		db.collection(IMAGE_COLLECTION)
 			.deleteOne({_id: new ObjectID(req.params.id), user: req.user})
 			.then(function(image) {
@@ -190,13 +182,13 @@ module.exports = function(app, db) {
 			});
 	}
 
-	app.get('/images',		//paramM.checkBodyParams(['longitude', 'latitude']),
+	app.get('/images',	paramM.checkBodyParams(['longitude', 'latitude']),
 						getImagesInRange);
 
-	app.get('/allimages',		//paramM.checkBodyParams(['longitude', 'latitude']),
-						getAllImages);
-	app.post('/images', //authM.validateUser,
-						//paramM.checkBodyParams(['longitude', 'latitude']),
+	app.get('/images/all',	paramM.checkBodyParams(['longitude', 'latitude']),
+							getAllImages);
+	app.post('/images', authM.validateUser,
+						paramM.checkBodyParams(['longitude', 'latitude']),
 						postImage);
 
 	app.post('/images/:id', rawBody,
