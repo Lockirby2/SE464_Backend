@@ -19,16 +19,6 @@ module.exports = function(app, db) {
 			});
 	}
 
-	function getAverageRating(req, res) {
-		db.collection(RATING_COLLECTION)
-			.find({iid: new ObjectID(req.params.id)})
-			.then(function(rating) {
-				res.status(200).json(ratings).end();
-			}).catch(function(err) {
-				res.status(500).json({error: "Failed to get rating"}).end();
-			});	
-	}
-
 	function postRating(req, res) {
 		var query = {iid: new ObjectID(req.params.iid), uid: req.user}
 		var update = {iid: new ObjectID(req.params.iid), uid: req.user, rating: req.body.rating}

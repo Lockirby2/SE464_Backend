@@ -173,7 +173,7 @@ module.exports = function(app, db) {
 
 	function getImagesByUser(req, res) {
 		db.collection(IMAGE_COLLECTION)
-			.find({user: new ObjectID(req.params.id)})
+			.find({user: req.user})
 			.toArray()
 			.then(function(images) {
 				res.status(200).json(images).end();
@@ -201,5 +201,6 @@ module.exports = function(app, db) {
 	app.delete('/images/:id',	authM.validateUser,
 								deleteImage);
 
-	app.get('/images/user/:id',	getImagesByUser);
+	app.get('/images/user',	authM.validateUser,
+							getImagesByUser);
 }
