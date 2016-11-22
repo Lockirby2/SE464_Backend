@@ -52,7 +52,7 @@ module.exports = function(app, db) {
 				.then(function(user) {
 					res.status(200).json(user).end();
 				}).catch(function(err) {
-					res.status(500).json({error: "Failed to post user"}).end();
+					res.status(500).json(err).end();
 				});
 		});
 	}
