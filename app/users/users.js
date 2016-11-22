@@ -37,6 +37,7 @@ module.exports = function(app, db) {
 			var bodyOb = JSON.parse(body);
 
 			if (error || response.statusCode !== 200) {
+				console.log("Google API call failed");
 				res.status(500).json({error: "Google API call failed"}).end();
 				return;
 			}
@@ -52,7 +53,8 @@ module.exports = function(app, db) {
 				.then(function(user) {
 					res.status(200).json(user).end();
 				}).catch(function(err) {
-					res.status(500).json(err).end();
+					console.log(err);
+					res.status(500).json({error: "Failed to post user"}).end();
 				});
 		});
 	}
