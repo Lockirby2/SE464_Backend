@@ -41,6 +41,7 @@ module.exports = function(app, db) {
     		type: "Point",
     		coordinates: [ req.body.latitude, req.body.longitude ]
     	};
+    	image.timestamp   = new Date();
 
 		db.collection(IMAGE_COLLECTION)
 			.insertOne(image)

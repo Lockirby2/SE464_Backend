@@ -21,6 +21,7 @@ function startServer(db) {
 	require('./app/images/images')(app, db);
 	require('./app/users/users')(app, db);
 	require('./app/ratings/ratings')(app, db);
+	require('./app/friends/friends')(app, db);
 
 	console.log("Server starting on port " + PORT);
 	app.listen(PORT);

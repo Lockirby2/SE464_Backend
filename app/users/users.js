@@ -15,6 +15,7 @@ module.exports = function(app, db) {
 		var user = {}
 
 		user.name        = req.body.name;
+		user.email       = req.body.name;
 		user.images      = [];
 
 		var url = config.googleUrl + req.body.token;
@@ -77,7 +78,7 @@ module.exports = function(app, db) {
 			});
 	}
 
-	app.post('/users',	paramM.checkBodyParams(['name', 'token']),
+	app.post('/users',	paramM.checkBodyParams(['name', 'email', 'token']),
 						postUser);
 	app.put('/users',	authM.validateUser,
 						updateUser);
