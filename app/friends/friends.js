@@ -10,6 +10,8 @@ module.exports = function(app, db) {
 	var authM  = require("../shared/auth.middleware.js")(app, db);
 
 	function getFriends(req, res) {
+		res.setHeader('Access-Control-Allow-Origin','*');
+
 		db.collection(FRIEND_COLLECTION)
 			.find({uidOne: req.user})
 			.toArray()
