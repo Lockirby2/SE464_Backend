@@ -21,6 +21,7 @@ module.exports = function(app, db) {
 	}
 
 	function postFriend(req, res) {
+		req.user = new ObjectID('58347c8fb04e3784211d151b');
 		var updateOne = {uidOne: new ObjectID(req.params.uid), uidTwo: req.user}
 		var updateTwo = {uidOne: req.user, uidTwo: new ObjectID(req.params.uid)}
 		var friend = {}
@@ -38,6 +39,7 @@ module.exports = function(app, db) {
 	}
 
 	function deleteFriend(req, res) {
+		req.user = new ObjectID('5830a9719232ff51bf026a8c');
 		db.collection(FRIEND_COLLECTION)
 			.deleteOne({uidOne: new ObjectID(req.params.uid), uidTwo: req.user})
 			.then(function() {

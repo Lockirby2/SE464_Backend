@@ -4,9 +4,10 @@ var path  = require('path');
 var fs = require('fs');
 var ObjectID  = mongodb.ObjectID;
 
-const IMAGE_COLLECTION  = 'images';
-const USER_COLLECTION   = 'users';
-const SEARCH_RADIUS     = 500;
+const IMAGE_COLLECTION   = 'images';
+const RATING_COLLECTION  = 'ratings';
+const USER_COLLECTION    = 'users';
+const SEARCH_RADIUS      = 500;
 
 module.exports = function(app, db) {
 	var paramM = require("../shared/params.middleware.js")(app, db);
@@ -72,6 +73,7 @@ module.exports = function(app, db) {
 	}
 
 	function postImage(req, res) {
+		req.user = new ObjectID('5830a9719232ff51bf026a8e');
 		var image = {};
 		console.log(req.body);
 		console.log("POSTING IMAGES");
@@ -157,19 +159,23 @@ module.exports = function(app, db) {
 	}
 
 	function deleteImage(req, res) {
+		req.user = new ObjectID('58347a0db04e3784211d1518');
 		db.collection(IMAGE_COLLECTION)
 			.deleteOne({_id: new ObjectID(req.params.id), user: req.user})
 			.then(function(image) {
 				if (image.result.n === 0) {
-					res.status(401).json({error: "Unauthorized"}).end();
+					return Promise.reject("Unauthorized");
 				} else {
 					var action = {$pull: {images: new ObjectID(req.params.id)}}
 					return db.collection(USER_COLLECTION).updateOne({_id: req.user}, action);
 				}
 			}).then(function() {
+				console.log("Deleting rating");
+				return db.collection(RATING_COLLECTION).deleteMany({iid: new ObjectID(req.params.id)});
+			}).then(function() {
 				res.status(200).end();
 			}).catch(function(err) {
-				res.status(500).json({error: "Failed to delete image"}).end();
+				res.status(500).json({error: err || "Failed to delete image"}).end();
 			});
 	}
 

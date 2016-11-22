@@ -6,16 +6,29 @@ var ObjectID  = mongodb.ObjectID;
 
 const USER_COLLECTION = 'users';
 const IMAGE_COLLECTION = 'images';
+const RATING_COLLECTION = 'ratings';
+const FRIEND_COLLECTION = 'friends';
 
 module.exports = function(app, db) {
 	var paramM = require("../shared/params.middleware.js")(app, db);
 	var authM  = require("../shared/auth.middleware.js")(app, db);
 
+	function getUsers(req, res) {
+		db.collection(USER_COLLECTION)
+			.find({_id: new ObjectID(req.params.id)})
+			.toArray()
+			.then(function(users) {
+				res.status(200).json(users).end();
+			}).catch(function(err) {
+				res.status(500).json({error: "Failed to get user"}).end();
+			});
+	}
+
 	function postUser(req, res) {
 		var user = {}
 
 		user.name        = req.body.name;
-		user.email       = req.body.name;
+		user.email       = req.body.email;
 		user.images      = [];
 
 		var url = config.googleUrl + req.body.token;
@@ -35,7 +48,7 @@ module.exports = function(app, db) {
 			user.googleId = bodyOb.sub;
 
 			db.collection(USER_COLLECTION)
-				.insert(user)
+				.updateOne({googleId: user.googleId}, user, {upsert: true})
 				.then(function(user) {
 					res.status(200).json(user).end();
 				}).catch(function(err) {
@@ -59,9 +72,16 @@ module.exports = function(app, db) {
 	}
 
 	function deleteUser(req, res) {
+		req.user = new ObjectID('58347c8fb04e3784211d151b');
 		db.collection(USER_COLLECTION)
 			.deleteOne({_id: req.user})
-			.then(function(user) {
+			.then(function() {
+				return db.collection(RATING_COLLECTION).deleteMany({uid: req.user});
+			})
+			.then(function() {
+				return db.collection(FRIEND_COLLECTION).deleteMany($or [{uidOne: req.user}, {uidTwo: req.user}]);
+			})
+			.then(function() {
 				res.status(200).end();
 			}).catch(function(err) {
 				res.status(500).json({error: "Failed to delete user"}).end();
@@ -78,6 +98,7 @@ module.exports = function(app, db) {
 			});
 	}
 
+	app.get('/users', getUsers);
 	app.post('/users',	paramM.checkBodyParams(['name', 'email', 'token']),
 						postUser);
 	app.put('/users',	authM.validateUser,
