@@ -185,8 +185,8 @@ module.exports = function(app, db) {
 	app.get('/images',	paramM.checkBodyParams(['longitude', 'latitude']),
 						getImagesInRange);
 
-	app.get('/images/all',	paramM.checkBodyParams(['longitude', 'latitude']),
-							getAllImages);
+	app.get('/images/all', getAllImages);
+	
 	app.post('/images', authM.validateUser,
 						paramM.checkBodyParams(['longitude', 'latitude']),
 						postImage);
