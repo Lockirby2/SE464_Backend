@@ -8,9 +8,9 @@ module.exports = (function(app, db) {
 	var authM = {}
 
 	authM.validateUser = function(req, res, next) {
-		req.user = '582f4bf12761ce23c5f7109f';
+		/*req.user = '582f4bf12761ce23c5f7109f';
 		next();
-		return;
+		return;*/
 		var credentials = [];
 		if (!req.headers.authorization) {
 			return res.status(401).json({ message : "User must be authenticated for this action." });
