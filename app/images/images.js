@@ -97,10 +97,10 @@ module.exports = function(app, db) {
 		resp = {};
 		resp.lit = "fam";
 		console.log("image getting writ fam");	
-		fs.writeFile('../data/' + req.params.id + '.png', req.rawBody, 'base64', function(err) {});
+		fs.writeFile('data/' + req.params.id + '.png', req.rawBody, 'base64', function(err) {});
 
 		update = {};
-		update.filePath =  '../data/' + req.params.id + '.png';
+		update.filePath =  'data/' + req.params.id + '.png';
 
 		db.collection(IMAGE_COLLECTION)
 			.updateOne({_id: new ObjectID(req.params.id), user: req.user}, {$set: update})
@@ -116,18 +116,14 @@ module.exports = function(app, db) {
 	}
 
 	function getImage(req, res) {
-	    var options = {
-         	root: '../data/',
-         	dotfiles: 'allow', // allow dot in file name
-   		};
-   		var filename = '../data/' + req.params.id + '.png';
+   		var filename = 'data/' + req.params.id + '.png';
    		
 		res.setHeader('Access-Control-Allow-Origin','*');
    		res.sendFile(path.resolve(filename), function(err){       
    			if (err) {
               console.log(err);
               res.status(err.status).end();
-         }else {
+         } else {
              console.log('Sent:', filename);
         }});
 	}
@@ -191,7 +187,8 @@ module.exports = function(app, db) {
 						paramM.checkBodyParams(['longitude', 'latitude']),
 						postImage);
 
-	app.post('/images/:id', rawBody,
+	app.post('/images/:id', authM.validateUser,
+							rawBody,
 							uploadImage);
 
 	app.get('/images/:id', getImage);
