@@ -2,6 +2,7 @@ var express   = require('express');
 var mongodb   = require('mongodb');
 var path  = require('path');
 var fs = require('fs');
+var cors = require('cors');
 var ObjectID  = mongodb.ObjectID;
 
 const IMAGE_COLLECTION   = 'images';
@@ -69,6 +70,7 @@ module.exports = function(app, db) {
 	}
 
 	function postImage(req, res) {
+		console.log("posting image by user: " + req.user);
 		var image = {};
 		image.name        = req.body.name        || 'Untitled';
 		image.description = req.body.description || 'No Description :)';
@@ -96,11 +98,11 @@ module.exports = function(app, db) {
 	function uploadImage(req, res) {
 		resp = {};
 		resp.lit = "fam";
-		console.log("image getting writ fam");	
-		fs.writeFile('data/' + req.params.id + '.png', req.rawBody, 'base64', function(err) {});
+		console.log("Uploading image by user: " + req.user);
+		fs.writeFile('../data/' + req.params.id + '.png', req.rawBody, 'base64', function(err) {});
 
 		update = {};
-		update.filePath =  'data/' + req.params.id + '.png';
+		update.filePath =  '../data/' + req.params.id + '.png';
 
 		db.collection(IMAGE_COLLECTION)
 			.updateOne({_id: new ObjectID(req.params.id), user: req.user}, {$set: update})
@@ -116,14 +118,18 @@ module.exports = function(app, db) {
 	}
 
 	function getImage(req, res) {
-   		var filename = 'data/' + req.params.id + '.png';
+	    var options = {
+         	root: '../data/',
+         	dotfiles: 'allow', // allow dot in file name
+   		};
+   		var filename = '../data/' + req.params.id + '.png';
    		
 		res.setHeader('Access-Control-Allow-Origin','*');
    		res.sendFile(path.resolve(filename), function(err){       
    			if (err) {
               console.log(err);
               res.status(err.status).end();
-         } else {
+         }else {
              console.log('Sent:', filename);
         }});
 	}
@@ -168,6 +174,8 @@ module.exports = function(app, db) {
 	}
 
 	function getImagesByUser(req, res) {
+		console.log("user requesting images, user: " + req.user);
+
 		db.collection(IMAGE_COLLECTION)
 			.find({user: req.user})
 			.toArray()
@@ -176,10 +184,12 @@ module.exports = function(app, db) {
 			}).catch(function(err) {
 				res.status(500).json({error: "Failed to get image"}).end();
 			});
+
 	}
 
-	app.get('/images',	paramM.checkBodyParams(['longitude', 'latitude']),
-						getImagesInRange);
+	app.options('/images/user', cors());
+
+	app.get('/images', getImagesInRange);
 
 	app.get('/images/all', getAllImages);
 	
@@ -187,17 +197,19 @@ module.exports = function(app, db) {
 						paramM.checkBodyParams(['longitude', 'latitude']),
 						postImage);
 
-	app.post('/images/:id', authM.validateUser,
-							rawBody,
+	app.get('/images/user',	cors(),
+							authM.validateUser,
+							getImagesByUser);
+
+	app.post('/images/:id', rawBody,
 							uploadImage);
 
 	app.get('/images/:id', getImage);
 
 	app.put('/images/:id',	authM.validateUser,
 							updateImage);
+
 	app.delete('/images/:id',	authM.validateUser,
 								deleteImage);
 
-	app.get('/images/user',	authM.validateUser,
-							getImagesByUser);
 }

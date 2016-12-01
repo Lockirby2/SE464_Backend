@@ -1,6 +1,7 @@
 var express   = require('express');
 var mongodb   = require('mongodb');
 var request   = require('request');
+var cors 	  = require('cors');
 var config    = require('../shared/config');
 var ObjectID  = mongodb.ObjectID;
 
@@ -26,6 +27,10 @@ module.exports = function(app, db) {
 
 	function postUser(req, res) {
 		var user = {}
+        console.log("welcome to the POST office");
+
+		res.setHeader('Access-Control-Allow-Origin','*');
+		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 
 		user.name        = req.body.name;
 		user.email       = req.body.email;
@@ -43,7 +48,8 @@ module.exports = function(app, db) {
 				res.status(500).json({error: "Google API call failed"}).end();
 				return;
 			}
-			if (bodyOb.aud !== config.clientId) {
+			if ((bodyOb.aud !== config.clientId) && (bodyOb.aud !== config.webClientId)) {
+				console.log("Unauthorized access, user aud: " + bodyOb.aud);
 				res.status(401).json({error: "Unauthorized"}).end();
 				return;
 			}
@@ -102,6 +108,7 @@ module.exports = function(app, db) {
 			});
 	}
 
+	app.options('/users', cors());
 	app.get('/users', getUsers);
 	app.post('/users',	paramM.checkBodyParams(['name', 'email', 'token']),
 						postUser);

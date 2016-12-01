@@ -23,6 +23,8 @@ module.exports = function(app, db) {
 		var query = {iid: new ObjectID(req.params.iid), uid: req.user}
 		var update = {iid: new ObjectID(req.params.iid), uid: req.user, rating: req.body.rating}
 		var rating = {}
+		
+		console.log("Rating coming through now from user: " + req.user);
 
 		db.collection(RATING_COLLECTION)
 			.update(query, update, {upsert: true})
