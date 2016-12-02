@@ -118,10 +118,6 @@ module.exports = function(app, db) {
 	}
 
 	function getImage(req, res) {
-	    var options = {
-         	root: '../data/',
-         	dotfiles: 'allow', // allow dot in file name
-   		};
    		var filename = '../data/' + req.params.id + '.png';
    		
 		res.setHeader('Access-Control-Allow-Origin','*');
@@ -204,12 +200,15 @@ module.exports = function(app, db) {
 	app.post('/images/:id', rawBody,
 							uploadImage);
 
+	app.options('/images/:id', cors());
+
 	app.get('/images/:id', getImage);
 
 	app.put('/images/:id',	authM.validateUser,
 							updateImage);
 
-	app.delete('/images/:id',	authM.validateUser,
+	app.delete('/images/:id',	cors(),
+								authM.validateUser,
 								deleteImage);
 
 }

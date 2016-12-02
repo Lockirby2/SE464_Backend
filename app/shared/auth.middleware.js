@@ -13,13 +13,14 @@ module.exports = (function(app, db) {
 		console.log("authenticating user with header: " + req.headers.authorization);
 
 		if (!req.headers.authorization) {
+			console.log("No auth Headers found in request");
 			return res.status(401).json({ message : "User must be authenticated for this action." });
 		}
 
 		credentials = req.headers.authorization.split(' ');
 
 		if (credentials[0] != 'Bearer:') {
-			console.log("no bearer found for request");
+			console.log("no bearer found in request");
 			return res.status(401).json({ message : "'Bearer:' must be first field in authorization header." });
 		}
 
