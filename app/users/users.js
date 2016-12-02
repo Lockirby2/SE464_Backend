@@ -99,7 +99,8 @@ module.exports = function(app, db) {
 	}
 
 	function getUser(req, res) {
-		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		res.setHeader('Access-Control-Allow-Origin','*');
+		
 		db.collection(USER_COLLECTION)
 			.findOne({_id: new ObjectID(req.params.id)})
 			.then(function(user) {

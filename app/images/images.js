@@ -183,6 +183,22 @@ module.exports = function(app, db) {
 
 	}
 
+	function getImagesByOtherUser(req, res) {
+		res.setHeader('Access-Control-Allow-Origin','*');
+		
+		console.log("requesting images for user: " + req.params.id);
+
+		db.collection(IMAGE_COLLECTION)
+			.find({user: req.params.id})
+			.toArray()
+			.then(function(images) {
+				res.status(200).json(images).end();
+			}).catch(function(err) {
+				res.status(500).json({error: "Failed to get image"}).end();
+			});
+
+	}
+
 	app.options('/images/user', cors());
 
 	app.get('/images', getImagesInRange);
@@ -196,6 +212,14 @@ module.exports = function(app, db) {
 	app.get('/images/user',	cors(),
 							authM.validateUser,
 							getImagesByUser);
+
+
+	app.options('/images/user/:id', cors());
+
+	app.get('/images/user/:id',	cors(),
+							authM.validateUser,
+							getImagesByOtherUser);
+
 
 	app.post('/images/:id', rawBody,
 							uploadImage);
